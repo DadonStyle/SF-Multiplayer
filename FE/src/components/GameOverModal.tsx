@@ -52,10 +52,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     try {
       await gameApi.submitScore(nickname.trim(), score);
       setSubmitted(true);
-      toast.success("Score submitted successfully!", {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      toast.success("Score submitted successfully!");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to submit score";
