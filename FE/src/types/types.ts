@@ -1,8 +1,9 @@
 export type Shape = "triangle" | "square" | "diamond" | "circle";
 export type Color = "red" | "green" | "blue" | "yellow";
 export type CooldownState = 0 | 1 | 2 | 3;
+export type GameStatus = "playing" | "over";
 
-export interface GameCellType {
+export interface GameCell {
   position: number;
   shape: Shape;
   color: Color;
@@ -10,28 +11,38 @@ export interface GameCellType {
 }
 
 export interface GameState {
-  cells: GameCellType[];
+  cells: GameCell[];
   score: number;
   isGameOver: boolean;
   currentTurn: number;
-}
-
-export interface Position {
-  row: number;
-  col: number;
-}
-
-export interface GameBoardProps {
-  gameState: GameState;
+  version: number;
+  status: GameStatus;
 }
 
 export interface GameCellProps {
-  cell: GameCellType;
+  cell: GameCell;
   onClick: () => void;
   disabled: boolean;
 }
 
-export interface ShapeProps {
-  color: Color;
-  size?: number;
+export interface LeaderboardEntry {
+  nickname: string;
+  score: number;
+  timestamp: string;
 }
+
+export interface ConnectionStatus {
+  connected: boolean;
+  connecting: boolean;
+  error: string | null;
+}
+
+export interface MoveRequest {
+  position: number;
+}
+
+export interface GameOverEvent {
+  finalScore: number;
+  totalTurns: number;
+}
+

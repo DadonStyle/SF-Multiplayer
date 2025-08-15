@@ -1,42 +1,25 @@
-import React, { Dispatch } from "react";
+import React from "react";
 import { Box } from "@mui/material";
-import { CooldownState, GameCellType } from "../types/types";
+import { GameState } from "../types/types";
 import { GameCell } from "./GameCell";
-import { COOLDOWN_TURNS } from "../constants/constants";
-import { generateValidCell } from "../utils/utils";
 
 interface GameBoardProps {
-  board: GameCellType[];
-  setBoard: Dispatch<GameCellType[]>;
-  onGameOver: (setBoard: Dispatch<GameCellType[]>) => void;
-  onScoreIncrease: () => void;
+  gameState: GameState;
+  onCellClick: (position: number) => void;
+  disabled?: boolean;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
-  board,
-  setBoard,
-  onGameOver,
-  onScoreIncrease,
+  gameState,
+  onCellClick,
+  disabled = false,
 }) => {
   const handleCellClick = (position: number) => {
-    const newCell = generateValidCell(board, position);
-    if (!newCell) {
-      onGameOver(setBoard);
-      return;
-    }
-    newCell.cooldown = COOLDOWN_TURNS as CooldownState;
-    const newBoard = [...board];
-    for (let i = 0; i < newBoard.length; i++) {
-      if (newBoard[i].cooldown > 0) {
-        newBoard[i] = {
-          ...newBoard[i],
-          cooldown: Math.max(0, newBoard[i].cooldown - 1) as CooldownState,
-        };
-      }
-    }
-    newBoard[position] = newCell;
-    setBoard(newBoard);
-    onScoreIncrease();
+    if (disabled) return;
+    const cell = gameState.cells[position];
+    if (cell && cell.cooldown > 0) return;
+    if (gameState.isGameOver || gameState.status === "over") return;
+    onCellClick(position);
   };
 
   return (
@@ -53,12 +36,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         borderColor: "primary.main",
       }}
     >
-      {board.map((cell) => (
+      {gameState.cells.map((cell) => (
         <GameCell
           key={cell.position}
           cell={cell}
           onClick={() => handleCellClick(cell.position)}
-          disabled={cell.cooldown > 0}
+          disabled={disabled || cell.cooldown > 0 || gameState.isGameOver}
         />
       ))}
     </Box>

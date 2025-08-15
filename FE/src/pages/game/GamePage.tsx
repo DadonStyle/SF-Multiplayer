@@ -1,31 +1,22 @@
 import React, { useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Chip, Button } from "@mui/material";
+import { LeaderboardOutlined as LeaderboardIcon } from "@mui/icons-material";
 import { GameBoard } from "../../components/GameBoard";
 import { GameOverModal } from "../../components/GameOverModal";
-import { GameCellType } from "../../types/types";
-import { initializeBoard } from "../../utils/utils";
+import { LeaderboardModal } from "../../components/LeaderboardModal";
+import { useGameState } from "../../hooks/useGameState";
 
 export const GamePage: React.FC = () => {
-  const [board, setBoard] = useState<GameCellType[]>(initializeBoard);
-  const [score, setScore] = useState(0);
-  const [currentTurn, setCurrentTurn] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleGameOver = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleScoreIncrease = () => {
-    setScore((prev) => prev + 1);
-    setCurrentTurn((prev) => prev + 1);
-  };
-
-  const handleNewRound = () => {
-    setScore(0);
-    setCurrentTurn(1);
-    setIsModalOpen(false);
-    setBoard(initializeBoard);
-  };
+  const {
+    gameState,
+    isGameOver,
+    gameOverData,
+    pendingMove,
+    connectionStatus,
+    makeMove,
+    resetGame,
+  } = useGameState();
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   return (
     <Box maxWidth="lg">
@@ -50,30 +41,56 @@ export const GamePage: React.FC = () => {
         >
           Multiplayer Grid Game
         </Typography>
-        <Typography
-          variant="h3"
-          sx={{ fontWeight: "bold", color: "primary.main" }}
-        >
-          Score: {score}
-        </Typography>
-        {isModalOpen ? (
-          <GameOverModal
-            open={isModalOpen}
-            score={score}
-            onResetBoard={handleNewRound}
+
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Chip
+            label={connectionStatus.connected ? "Connected" : "Connected"}
+            color={connectionStatus.connected ? "success" : "error"}
+            size="small"
           />
-        ) : (
-          <></>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+          <Typography
+            variant="h3"
+            sx={{ fontWeight: "bold", color: "primary.main" }}
+          >
+            Score: {gameState.score}
+          </Typography>
+
+          <Button
+            variant="outlined"
+            startIcon={<LeaderboardIcon />}
+            onClick={() => setShowLeaderboard(true)}
+            sx={{ height: "fit-content" }}
+          >
+            Leaderboard
+          </Button>
+        </Box>
+
+        {isGameOver && (
+          <GameOverModal
+            open={isGameOver}
+            score={gameState.score}
+            gameOverData={gameOverData}
+            onResetBoard={resetGame}
+          />
         )}
-        <GameBoard
-          onGameOver={handleGameOver}
-          onScoreIncrease={handleScoreIncrease}
-          board={board}
-          setBoard={setBoard}
+
+        <LeaderboardModal
+          open={showLeaderboard}
+          onClose={() => setShowLeaderboard(false)}
         />
+
+        <GameBoard
+          gameState={gameState}
+          onCellClick={makeMove}
+          disabled={!connectionStatus.connected || pendingMove}
+        />
+
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <Typography variant="body1" sx={{ color: "text.secondary" }}>
-            Turn: {currentTurn}
+            Turn: {gameState.currentTurn}
           </Typography>
         </Box>
         <Box
